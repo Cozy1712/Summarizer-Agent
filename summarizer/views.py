@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 import logging
 from .serializers import WebhookSerializer, SummaryOptionsSerializer
-from .services import SummarizerService
+from .services import SummarizerService, QuickSummarizer
 from .utils import ContentValidator
 
 logger = logging.getLogger(__name__)

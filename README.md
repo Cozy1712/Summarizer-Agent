@@ -67,9 +67,9 @@ python manage.py runserver
 The application will be available at http://localhost:8000
 
 🔌 API Endpoints
-Base URL: http://localhost:8000/api/
+Base URL: http://localhost:8000/
 1. Health Check
-GET /health/
+GET /health
 
 Check service status and capabilities.
 
@@ -90,7 +90,7 @@ Response:
 }
 
 2. Telex Webhook
-POST /webhook/
+POST /webhook
 
 Main endpoint for Telex.im integration.
 
@@ -116,7 +116,7 @@ Response:
 }
 
 3. Custom Summarize
-POST /summarize/
+POST /summarize
 
 Advanced summarization with full options.
 
@@ -134,7 +134,7 @@ Request:
 }
 
 4. Quick Summarize
-POST /quick-summarize/
+POST /quick-summarize
 
 Fast summarization without AI.
 
@@ -146,7 +146,7 @@ Request:
 
 
 5. Workflow Definition
-GET /workflow/
+GET /workflow
 
 Get Telex.im workflow configuration.
 

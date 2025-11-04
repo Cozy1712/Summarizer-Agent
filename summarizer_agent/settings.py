@@ -93,6 +93,9 @@ REST_FRAMEWORK = {
     ],
 }
 
+# Disable automatic trailing slash appending
+APPEND_SLASH = False
+
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
