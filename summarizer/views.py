@@ -208,7 +208,7 @@ def workflow_definition(request):
                 "position": [600, 150],
                 "type": "a2a/django-a2a-node",
                 "typeVersion": 1,
-                "url": ""  # actual URL
+                "url": "https://cozy.pythonanywhere.com/webhook"  # actual URL
             }
         ],
         "pinData": {},

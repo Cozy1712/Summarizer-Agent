@@ -49,7 +49,7 @@ class TextProcessor: #
 
 class ContentValidator:
     @staticmethod
-    def validate_text_length(text, min_length=50):
+    def validate_text_length(text, min_length=10):
         """Validate that text is long enough to summarize"""
         word_count = len(text.split())
         if word_count < min_length:

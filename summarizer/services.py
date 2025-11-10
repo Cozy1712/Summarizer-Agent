@@ -94,28 +94,26 @@ class SummarizerService:
         
         summary_type = options.get('summary_type', 'general')
         length = options.get('length', 'medium')
-        include_bullet_points = options.get('include_bullet_points', True)
-        include_key_points = options.get('include_key_points', True)
-        language = options.get('language', 'english')
         
         try:
-            # Generate summary with all parameters
-            result = self.generate_summary(
-                message, 
-                summary_type=summary_type, 
-                length=length,
-                include_bullet_points=include_bullet_points,
-                include_key_points=include_key_points,
-                language=language
-            )
+            # Remove "summarizing..." prefix if present
+            clean_message = message
+            if message.startswith(('meeting:', 'news:', 'tech:', 'conv:', 'log:')):
+                # Extract the actual content after the prefix
+                parts = message.split(':', 1)
+                if len(parts) > 1:
+                    clean_message = parts[1].strip()
             
-            # Save to database
+            # Generate summary
+            result = self.generate_summary(clean_message, summary_type, length, options)
+            
+            # Save to database (optional)
             request_id = str(uuid.uuid4())
             summary_request = SummaryRequest.objects.create(
                 request_id=request_id,
                 user_id=user_id,
                 conversation_id=conversation_id,
-                original_text=message[:10000],  # Limit stored text
+                original_text=clean_message[:10000],
                 summary_type=summary_type,
                 summary_length=length,
                 summary=result['summary'],
@@ -130,29 +128,55 @@ class SummarizerService:
             return response_message
             
         except ValueError as e:
-            # Handle validation errors
             return f"{str(e)} Please provide longer text for summarization."
         except Exception as e:
             logger.error(f"Error processing telex message: {str(e)}")
-            return "I apologize, but I'm having trouble generating a summary right now. Please try again with a different text."
-    
+            return "I apologize, but I'm having trouble generating a summary right now. Please try again."
+                
     def _format_telex_response(self, result, summary_type, length):
         """Format the summary response for Telex.im"""
         
         summary_type_display = dict(SummaryRequest.SUMMARY_TYPES).get(summary_type, 'Summary')
         
         response = f"""
-**{summary_type_display}** ({length})
+    **{summary_type_display}** ({length})
 
-{result['summary']}
+    {result['summary']}
 
 ---
 *Statistics:*
-• Original: {result['word_count_original']} words ({result['reading_time_original']} min read)
-• Summary: {result['word_count_summary']} words ({result['reading_time_summary']} min read)  
+• Original: {result['word_count_original']} words
+• Summary: {result['word_count_summary']} words  
 • Compression: {result['compression_ratio']}% reduced
+• Reading time saved: {result['reading_time_original'] - result['reading_time_summary']} minutes
 
-*Key phrases:* {', '.join(result['key_phrases'][:5])}
+*Key phrases:* {', '.join(result['key_phrases'][:3])}
 """
         
         return response.strip()
+    
+class QuickSummarizer:
+    """Lightweight summarizer for simple cases without AI"""
+    
+    @staticmethod
+    def extract_first_sentences(text, num_sentences=3):
+        """Extract first few sentences as a simple summary"""
+        sentences = text.split('. ')
+        if len(sentences) <= num_sentences:
+            return text
+        
+        summary = '. '.join(sentences[:num_sentences]) + '.'
+        return summary
+    
+    @staticmethod
+    def create_bullet_summary(text, max_bullets=5):
+        """Create a simple bullet-point summary"""
+        sentences = text.split('. ')
+        key_sentences = sentences[:max_bullets]
+        
+        summary = "**Quick Summary:**\n\n"
+        for i, sentence in enumerate(key_sentences, 1):
+            if sentence.strip():
+                summary += f"• {sentence.strip()}.\n"
+        
+        return summary
